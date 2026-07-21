@@ -12,8 +12,9 @@
 ## 📺 Visual Demo
 > *Dive into a premium, ad-free anime and manga experience directly from your browser.*
 
-*(Insert a GIF or Screenshot of your application working here)*
-![OtakuHub Demo](./public/logo.svg) <!-- Replace with actual demo screenshot -->
+![Home Screen](./public/screen_1.png)
+![Manga Reader](./public/screen_2.png)
+![Gallery / Features](./public/screen_3.png)
 
 ---
 
