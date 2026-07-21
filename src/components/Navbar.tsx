@@ -1,0 +1,120 @@
+"use client";
+
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
+import { Button, buttonVariants } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "./ui/sheet";
+import { Menu, X, Search, Bookmark } from "lucide-react";
+import { useGlobalStore } from "@/store/useGlobalStore";
+import { usePathname } from "next/navigation";
+
+export default function Navbar() {
+  const { data: session } = useSession();
+  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } = useGlobalStore();
+  const pathname = usePathname();
+
+  // Hide the global Navbar completely if we are reading a manga (the manga reader has its own header)
+  if (pathname.startsWith('/manga/') && pathname.length > '/manga/'.length) {
+    return null;
+  }
+
+  return (
+    <nav className="bg-[#f5f5f5] sticky top-0 z-50">
+      <div className="max-w-[1440px] mx-auto px-[40px] h-20 flex items-center justify-between">
+        
+        {/* Left: LOGO & Mobile Menu Toggle */}
+        <div className="flex items-center gap-4">
+          <div className="md:hidden flex items-center gap-2 text-[#0c0a09] cursor-pointer hover:text-[#4e4e4e] transition-colors" onClick={toggleMobileMenu}>
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </div>
+          <Link href="/" className="text-[24px] font-serif font-light font-medium text-[#0c0a09] tracking-normal flex items-center gap-3">
+            <img src="/logo.svg" alt="OtakuHub Logo" className="w-8 h-8" />
+            <span className="hidden sm:inline">OTAKUHUB</span>
+          </Link>
+        </div>
+
+        {/* Center: Desktop Nav */}
+        <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+          <Link href="/gallery" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Gallery</Link>
+          <Link href="/videos" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Videos</Link>
+          <Link href="/manga" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Manga</Link>
+          <Link href="/quotes" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Quotes</Link>
+          <Link href="/news" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">News</Link>
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-6">
+
+          {session ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="outline-none">
+                <Avatar className="cursor-pointer border border-[#e7e5e4] rounded-full hover:border-[#0c0a09] transition-all">
+                  <AvatarFallback className="bg-[#ffffff] shadow-sm text-[#0c0a09] rounded-full ">
+                    {session.user?.name?.[0] || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-[#ffffff] shadow-sm border-[#e7e5e4] text-[#0c0a09] rounded-2xl">
+                <DropdownMenuLabel className=" text-[12px] tracking-normal text-[#4e4e4e]">My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-[#494949]" />
+                <DropdownMenuItem className="p-0 hover:bg-white hover:text-black focus:bg-white focus:text-black cursor-pointer rounded-2xl">
+                  <Link href="/profile" className="w-full h-full px-4 py-3 text-[14px]  tracking-[0.15px]">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-0 hover:bg-white hover:text-black focus:bg-white focus:text-black cursor-pointer rounded-2xl">
+                  <Link href="/favorites" className="w-full h-full px-4 py-3 text-[14px]  tracking-[0.15px]">Favorites</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[#494949]" />
+                <DropdownMenuItem 
+                  onClick={() => signOut()}
+                  className="px-4 py-3 text-[#dc2626] hover:bg-[#ff3333] hover:text-[#0c0a09] focus:bg-[#ff3333] focus:text-[#0c0a09] cursor-pointer rounded-2xl  text-[14px] tracking-[0.15px]"
+                >
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <div className="flex items-center gap-4">
+              <Link href="/auth/signin" className={buttonVariants({ variant: "ghost", className: "hidden sm:flex  tracking-[0.15px] text-[14.4px]" })}>
+                Log in
+              </Link>
+              <Link href="/auth/signup" className={buttonVariants({ className: "hidden sm:flex" })}>
+                Sign up
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Mobile Menu Content / Drawer */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={(open) => !open && closeMobileMenu()}>
+        <SheetContent side="left" className="bg-[#f5f5f5] border-r border-[#e7e5e4] px-[40px] py-[40px] flex flex-col gap-8 w-[80vw] sm:max-w-sm">
+          <SheetHeader className="text-left mb-8 hidden">
+            <SheetTitle>Menu</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-6 pt-12">
+            <Link href="/gallery" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Gallery</Link>
+            <Link href="/videos" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Videos</Link>
+            <Link href="/manga" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Manga</Link>
+            <Link href="/quotes" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Quotes</Link>
+            <Link href="/news" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">News</Link>
+          </div>
+          {!session && (
+            <div className="pt-8 flex flex-col gap-4 border-t border-[#e7e5e4] mt-auto">
+              <Link href="/auth/signin" onClick={closeMobileMenu} className={buttonVariants({ variant: "ghost", className: "w-full justify-start text-[15px]" })}>Log in</Link>
+              <Link href="/auth/signup" onClick={closeMobileMenu} className={buttonVariants({ className: "w-full justify-start text-[15px]" })}>Sign up</Link>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+    </nav>
+  );
+}
