@@ -11,6 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from "./ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "./ui/sheet";
 import { Menu, X, Search, Bookmark } from "lucide-react";
@@ -64,14 +65,16 @@ export default function Navbar() {
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-[#ffffff] shadow-sm border-[#e7e5e4] text-[#0c0a09] rounded-2xl">
-                <DropdownMenuLabel className=" text-[12px] tracking-normal text-[#4e4e4e]">My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-[#494949]" />
-                <DropdownMenuItem className="p-0 hover:bg-white hover:text-black focus:bg-white focus:text-black cursor-pointer rounded-2xl">
-                  <Link href="/profile" className="w-full h-full px-4 py-3 text-[14px]  tracking-[0.15px]">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="p-0 hover:bg-white hover:text-black focus:bg-white focus:text-black cursor-pointer rounded-2xl">
-                  <Link href="/favorites" className="w-full h-full px-4 py-3 text-[14px]  tracking-[0.15px]">Favorites</Link>
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className=" text-[12px] tracking-normal text-[#4e4e4e]">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#494949]" />
+                  <DropdownMenuItem className="p-0 hover:bg-white hover:text-black focus:bg-white focus:text-black cursor-pointer rounded-2xl">
+                    <Link href="/profile" className="w-full h-full px-4 py-3 text-[14px]  tracking-[0.15px]">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="p-0 hover:bg-white hover:text-black focus:bg-white focus:text-black cursor-pointer rounded-2xl">
+                    <Link href="/favorites" className="w-full h-full px-4 py-3 text-[14px]  tracking-[0.15px]">Favorites</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-[#494949]" />
                 <DropdownMenuItem 
                   onClick={() => signOut()}
