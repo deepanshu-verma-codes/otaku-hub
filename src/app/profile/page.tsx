@@ -61,7 +61,7 @@ export default function ProfilePage() {
               </h3>
               
               <div className="space-y-2 pt-2">
-                <Label className="text-[12px] tracking-[0.15px] text-[#4e4e4e] uppercase">USERNAME</Label>
+                <Label className="text-[12px] tracking-[0.15px] text-[#4e4e4e] uppercase">FULL NAME</Label>
                 <Input defaultValue={session.user?.name || ""} className="bg-[#f5f5f5] border-[#e7e5e4] rounded-2xl text-[#0c0a09] h-12 tracking-[0.15px] focus-visible:border-white focus-visible:ring-0 uppercase" />
               </div>
               

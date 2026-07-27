@@ -62,7 +62,7 @@ export default function SignUp() {
           {error && <div className="text-[#ffffff] text-[12px]  tracking-normal font-medium text-center bg-[#ff3333] p-3 rounded-2xl">{error}</div>}
           
           <div className="space-y-2">
-            <Label htmlFor="name" className=" text-[12px] tracking-[0.15px] text-[#4e4e4e]">Username</Label>
+            <Label htmlFor="name" className=" text-[12px] tracking-[0.15px] text-[#4e4e4e]">Full Name</Label>
             <Input
               id="name"
               type="text"
