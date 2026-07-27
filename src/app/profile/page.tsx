@@ -7,8 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -57,42 +55,32 @@ export default function ProfilePage() {
 
           {/* Main Content */}
           <div className="flex-1">
-            <Tabs defaultValue="settings" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-[#ffffff] border border-[#e7e5e4] rounded-2xl h-12 p-1">
-                <TabsTrigger value="settings" className="data-[state=active]:bg-[#f5f5f5] data-[state=active]:text-[#0c0a09] data-[state=active]:shadow-sm rounded-xl text-[12px] tracking-[0.15px] uppercase">
-                  ACCOUNT SETTINGS
-                </TabsTrigger>
-                <TabsTrigger value="history" className="data-[state=active]:bg-[#f5f5f5] data-[state=active]:text-[#0c0a09] data-[state=active]:shadow-sm rounded-xl text-[12px] tracking-[0.15px] uppercase">
-                  WATCH HISTORY
-                </TabsTrigger>
-              </TabsList>
+            <div className="p-8 bg-[#ffffff] rounded-2xl border border-[#e7e5e4] shadow-sm space-y-6">
+              <h3 className="text-[14px] font-medium text-[#0c0a09] tracking-[0.15px] uppercase border-b border-[#e7e5e4] pb-4">
+                ACCOUNT SETTINGS
+              </h3>
               
-              <TabsContent value="settings" className="mt-8 p-8 bg-[#ffffff] rounded-2xl border border-[#e7e5e4] shadow-sm space-y-6">
-                <div className="space-y-2">
-                  <Label className="text-[12px] tracking-[0.15px] text-[#4e4e4e] uppercase">USERNAME</Label>
-                  <Input defaultValue={session.user?.name || ""} className="bg-[#f5f5f5] border-[#e7e5e4] rounded-2xl text-[#0c0a09] h-12 tracking-[0.15px] focus-visible:border-white focus-visible:ring-0 uppercase" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[12px] tracking-[0.15px] text-[#4e4e4e] uppercase">BIO</Label>
-                  <Textarea 
-                    placeholder="TELL US ABOUT YOUR FAVORITE ANIME..." 
-                    className="bg-[#f5f5f5] border-[#e7e5e4] rounded-2xl text-[#0c0a09] tracking-[0.15px] focus-visible:border-white focus-visible:ring-0 min-h-[120px] p-4 resize-none uppercase"
-                    defaultValue="I LOVE ACTION AND ISEKAI ANIME! MY TOP 3 ARE..."
-                  />
-                </div>
-                <div className="pt-4">
-                  <Button className="w-full bg-[#0c0a09] hover:bg-[#292524] text-[#ffffff] rounded-2xl h-12 tracking-[0.15px] text-[14px]">
-                    SAVE CHANGES
-                  </Button>
-                </div>
-              </TabsContent>
+              <div className="space-y-2 pt-2">
+                <Label className="text-[12px] tracking-[0.15px] text-[#4e4e4e] uppercase">USERNAME</Label>
+                <Input defaultValue={session.user?.name || ""} className="bg-[#f5f5f5] border-[#e7e5e4] rounded-2xl text-[#0c0a09] h-12 tracking-[0.15px] focus-visible:border-white focus-visible:ring-0 uppercase" />
+              </div>
               
-              <TabsContent value="history" className="mt-8 p-12 bg-[#ffffff] rounded-2xl border border-[#e7e5e4] shadow-sm flex items-center justify-center min-h-[300px]">
-                <p className="text-[#4e4e4e] text-[12px] tracking-[0.15px] uppercase text-center">
-                  YOUR WATCH HISTORY WILL APPEAR HERE.
-                </p>
-              </TabsContent>
-            </Tabs>
+              <div className="space-y-2">
+                <Label className="text-[12px] tracking-[0.15px] text-[#4e4e4e] uppercase">NEW PASSWORD</Label>
+                <Input type="password" placeholder="LEAVE BLANK TO KEEP CURRENT PASSWORD" className="bg-[#f5f5f5] border-[#e7e5e4] rounded-2xl text-[#0c0a09] h-12 tracking-[0.15px] focus-visible:border-white focus-visible:ring-0 placeholder:text-[#a8a29e]" />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-[12px] tracking-[0.15px] text-[#4e4e4e] uppercase">CONFIRM NEW PASSWORD</Label>
+                <Input type="password" placeholder="CONFIRM NEW PASSWORD" className="bg-[#f5f5f5] border-[#e7e5e4] rounded-2xl text-[#0c0a09] h-12 tracking-[0.15px] focus-visible:border-white focus-visible:ring-0 placeholder:text-[#a8a29e]" />
+              </div>
+
+              <div className="pt-4">
+                <Button className="w-full bg-[#0c0a09] hover:bg-[#292524] text-[#ffffff] rounded-2xl h-12 tracking-[0.15px] text-[14px]">
+                  SAVE CHANGES
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
