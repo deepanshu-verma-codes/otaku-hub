@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -104,6 +105,24 @@ export default function SignUp() {
             {isLoading ? "PROCESSING..." : "CREATE ACCOUNT"}
           </Button>
         </form>
+        
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-[#e7e5e4]" />
+          </div>
+          <div className="relative flex justify-center text-[10px] tracking-normal ">
+            <span className="bg-[#ffffff] shadow-sm px-4 text-[#4e4e4e] rounded-xl">OR CONTINUE WITH</span>
+          </div>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          type="button" 
+          className="w-full bg-transparent border-[#e7e5e4] hover:bg-[#ffffff] shadow-sm text-[#0c0a09] rounded-2xl h-12  tracking-[0.15px] text-[14px]"
+          onClick={() => signIn("google", { callbackUrl: "/" })}
+        >
+          GOOGLE
+        </Button>
         
         <div className="mt-8 pt-6 border-t border-[#e7e5e4] text-[12px] text-center w-full text-[#4e4e4e]  tracking-[0.15px]">
           ALREADY HAVE AN ACCOUNT?{" "}
