@@ -38,18 +38,36 @@ export default function Navbar() {
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </div>
           <Link href="/" className="text-[24px] font-serif font-light font-medium text-[#0c0a09] tracking-normal flex items-center gap-3">
-            <img src="/logo.svg" alt="OtakuHub Logo" className="w-8 h-8" />
+            <img src="/logo.jpg" alt="OtakuHub Logo" className="w-8 h-8 rounded-full" />
             <span className="hidden sm:inline">OTAKUHUB</span>
           </Link>
         </div>
 
         {/* Center: Desktop Nav */}
         <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-          <Link href="/gallery" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Gallery</Link>
-          <Link href="/videos" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Videos</Link>
-          <Link href="/manga" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Manga</Link>
-          <Link href="/quotes" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Quotes</Link>
-          <Link href="/news" className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">News</Link>
+          {[
+            { name: 'Gallery', href: '/gallery' },
+            { name: 'Anime', href: '/anime' },
+            { name: 'Trailers', href: '/trailers' },
+            { name: 'Manga', href: '/manga' },
+            { name: 'Quotes', href: '/quotes' },
+            { name: 'News', href: '/news' },
+          ].map((link) => {
+            const isActive = pathname.startsWith(link.href);
+            return (
+              <Link 
+                key={link.name} 
+                href={link.href} 
+                className={`relative font-medium text-[15px] transition-colors pb-1
+                  after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0c0a09] 
+                  after:origin-left after:transition-transform after:duration-300
+                  ${isActive ? 'after:scale-x-100 text-[#0c0a09]' : 'after:scale-x-0 hover:after:scale-x-100 text-[#4e4e4e] hover:text-[#0c0a09]'}
+                `}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Right: Actions */}
@@ -103,12 +121,31 @@ export default function Navbar() {
           <SheetHeader className="text-left mb-8 hidden">
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col gap-6 pt-12">
-            <Link href="/gallery" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Gallery</Link>
-            <Link href="/videos" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Videos</Link>
-            <Link href="/manga" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Manga</Link>
-            <Link href="/quotes" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">Quotes</Link>
-            <Link href="/news" onClick={closeMobileMenu} className="text-[#0c0a09] font-medium text-[15px] hover:text-[#4e4e4e] transition-colors">News</Link>
+          <div className="flex flex-col gap-6 pt-12 items-start">
+            {[
+              { name: 'Gallery', href: '/gallery' },
+              { name: 'Anime', href: '/anime' },
+              { name: 'Trailers', href: '/trailers' },
+              { name: 'Manga', href: '/manga' },
+              { name: 'Quotes', href: '/quotes' },
+              { name: 'News', href: '/news' },
+            ].map((link) => {
+              const isActive = pathname.startsWith(link.href);
+              return (
+                <Link 
+                  key={link.name} 
+                  href={link.href} 
+                  onClick={closeMobileMenu}
+                  className={`relative font-medium text-[18px] transition-colors pb-1 w-fit
+                    after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#0c0a09] 
+                    after:origin-left after:transition-transform after:duration-300
+                    ${isActive ? 'after:scale-x-100 text-[#0c0a09]' : 'after:scale-x-0 hover:after:scale-x-100 text-[#4e4e4e] hover:text-[#0c0a09]'}
+                  `}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
           {!session && (
             <div className="pt-8 flex flex-col gap-4 border-t border-[#e7e5e4] mt-auto">

@@ -5,7 +5,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Play, Newspaper, Quote, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Loader from "@/components/Loader";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
   const { data: trendingImages, isLoading: imagesLoading } = useQuery({
@@ -17,10 +17,10 @@ export default function Home() {
     },
   });
 
-  const { data: latestVideos, isLoading: videosLoading } = useQuery({
+  const { data: latestTrailers, isLoading: trailersLoading } = useQuery({
     queryKey: ["homepage-videos"],
     queryFn: async () => {
-      const res = await fetch("/api/videos?limit=3");
+      const res = await fetch("/api/trailers?limit=3");
       const data = await res.json();
       return data.items || [];
     },
@@ -78,8 +78,8 @@ export default function Home() {
           <Link href="/gallery" className="bg-[#0c0a09] text-[#ffffff] hover:bg-[#292524] px-8 py-3  tracking-[0.15px] text-[16px] font-medium transition-colors rounded-full">
             ENTER GALLERY
           </Link>
-          <Link href="/videos" className="bg-transparent border border-[#e7e5e4] text-[#0c0a09] hover:bg-white/50 px-8 py-3  tracking-[0.15px] text-[16px] font-medium transition-colors rounded-full">
-            WATCH VIDEOS
+          <Link href="/trailers" className="bg-transparent border border-[#e7e5e4] text-[#0c0a09] hover:bg-white/50 px-8 py-3  tracking-[0.15px] text-[16px] font-medium transition-colors rounded-full">
+            WATCH TRAILERS
           </Link>
         </div>
 
@@ -99,7 +99,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {imagesLoading 
-              ? <div className="col-span-full py-12"><Loader /></div>
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-[3/4] rounded-2xl w-full" />
+                ))
               : trendingImages?.map((img: any, i: number) => (
                   <Link href="/gallery" key={i} className="group relative aspect-[3/4] bg-[#ffffff] shadow-sm border border-[#e7e5e4] overflow-hidden cursor-pointer rounded-2xl hover:border-white transition-colors">
                     <img 
@@ -121,16 +123,18 @@ export default function Home() {
         {/* 3. Featured Videos */}
         <section className="space-y-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#e7e5e4] pb-6">
-            <h2 className="text-[32px] font-serif font-light tracking-[-0.32px] font-serif font-light tracking-[-0.32px] md:text-[36px] font-serif font-light tracking-[-0.36px] font-normal  text-[#0c0a09] leading-[1.19]">LATEST VIDEOS</h2>
-            <Link href="/videos" className={buttonVariants({ variant: "ghost", className: " tracking-[0.15px]" })}>
+            <h2 className="text-[32px] font-serif font-light tracking-[-0.32px] font-serif font-light tracking-[-0.32px] md:text-[36px] font-serif font-light tracking-[-0.36px] font-normal  text-[#0c0a09] leading-[1.19]">LATEST TRAILERS</h2>
+            <Link href="/trailers" className={buttonVariants({ variant: "ghost", className: " tracking-[0.15px]" })}>
               VIEW ALL
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {videosLoading
-              ? <div className="col-span-full py-12"><Loader /></div>
-              : latestVideos?.map((video: any, i: number) => (
-                  <Link href={`/videos/${video.id}`} key={i} className="group relative aspect-video bg-[#ffffff] shadow-sm border border-[#e7e5e4] overflow-hidden cursor-pointer rounded-2xl hover:border-white transition-colors">
+            {trailersLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-video rounded-2xl w-full" />
+                ))
+              : latestTrailers?.map((video: any, i: number) => (
+                  <Link href={`/trailers/${video.id}`} key={i} className="group relative aspect-video bg-[#ffffff] shadow-sm border border-[#e7e5e4] overflow-hidden cursor-pointer rounded-2xl hover:border-white transition-colors">
                     <img 
                       src={video.thumbnail} 
                       alt={video.title} 
@@ -165,7 +169,9 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {newsLoading 
-              ? <div className="col-span-full py-12"><Loader /></div>
+              ? Array.from({ length: 2 }).map((_, i) => (
+                  <Skeleton key={i} className="h-[250px] rounded-xl w-full" />
+                ))
               : latestNews?.map((news: any, i: number) => (
                   <a 
                     key={i} 

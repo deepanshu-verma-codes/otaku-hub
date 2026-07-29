@@ -10,6 +10,8 @@ export async function GET(
     query ($id: Int) {
       Media (id: $id, type: ANIME) {
         id
+        idMal
+        episodes
         title {
           english
           romaji
@@ -44,27 +46,29 @@ export async function GET(
     const data = await res.json();
 
     if (!data.data || !data.data.Media) {
-      return NextResponse.json({ message: "Video not found" }, { status: 404 });
+      return NextResponse.json({ message: "Trailer not found" }, { status: 404 });
     }
 
     const m = data.data.Media;
     let cleanDescription = m.description || "No description provided.";
     cleanDescription = cleanDescription.replace(/<[^>]*>?/gm, '');
 
-    const video = {
+    const trailer = {
       id: m.id.toString(),
       title: m.title.english || m.title.romaji || "Unknown Anime",
       thumbnail: m.coverImage.extraLarge || m.coverImage.large,
-      videoUrl: m.trailer && m.trailer.site === "youtube" ? `https://www.youtube.com/watch?v=${m.trailer.id.trim()}` : null,
+      trailerUrl: m.trailer && m.trailer.site === "youtube" ? `https://www.youtube.com/watch?v=${m.trailer.id.trim()}` : null,
       youtubeId: m.trailer && m.trailer.site === "youtube" ? m.trailer.id.trim() : null,
       duration: "TRAILER",
       views: `${Math.floor((m.popularity || 0) / 1000)}K`,
-      category: "Anime Trailer",
-      synopsis: cleanDescription
+      category: "Anime",
+      synopsis: cleanDescription,
+      episodes: m.episodes || 12,
+      idMal: m.idMal
     };
 
-    return NextResponse.json(video);
+    return NextResponse.json(trailer);
   } catch(err) {
-    return NextResponse.json({ message: "Error fetching video" }, { status: 500 });
+    return NextResponse.json({ message: "Error fetching trailer" }, { status: 500 });
   }
 }

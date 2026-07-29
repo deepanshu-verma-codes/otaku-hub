@@ -8,18 +8,18 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/Loader";
 
-export default function VideosPage() {
+export default function TrailersPage() {
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["videos", page],
+    queryKey: ["trailers", page],
     queryFn: async () => {
-      const res = await fetch(`/api/videos?page=${page}&limit=8`);
+      const res = await fetch(`/api/trailers?page=${page}&limit=8`);
       return res.json();
     },
   });
 
-  const videos = data?.items || [];
+  const trailers = data?.items || [];
   const totalPages = data?.totalPages || 1;
 
   if (isLoading) {
@@ -34,13 +34,13 @@ export default function VideosPage() {
     <div className="max-w-[1440px] mx-auto px-[40px] py-12 bg-[#f5f5f5] min-h-screen">
       <div className="border-b border-[#e7e5e4] pb-6 mb-12">
         <h1 className="text-[36px] font-serif font-light tracking-[-0.36px] font-normal  text-[#0c0a09] leading-[1.19]">
-          VIDEOS & AMVS
+          TRAILERS
         </h1>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {videos?.map((video: any, index: number) => (
-          <Link href={`/videos/${video.id}`} key={video.id}>
+        {trailers?.map((video: any, index: number) => (
+          <Link href={`/trailers/${video.id}`} key={video.id}>
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

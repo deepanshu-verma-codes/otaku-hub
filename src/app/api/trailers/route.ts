@@ -64,7 +64,7 @@ export async function GET(req: Request) {
           id: m.id.toString(),
           title: m.title.english || m.title.romaji || "Unknown Anime",
           thumbnail: m.coverImage.extraLarge || m.coverImage.large,
-          videoUrl: `https://www.youtube.com/embed/${m.trailer.id.trim()}`,
+          trailerUrl: `https://www.youtube.com/embed/${m.trailer.id.trim()}`,
           youtubeId: m.trailer.id.trim(),
           duration: "TRAILER",
           views: `${Math.floor((m.popularity || 0) / 1000)}K`,
@@ -80,6 +80,6 @@ export async function GET(req: Request) {
       totalItems: data.data.Page.pageInfo.total
     });
   } catch (err) {
-    return NextResponse.json({ message: "Failed to fetch videos" }, { status: 500 });
+    return NextResponse.json({ message: "Failed to fetch trailers" }, { status: 500 });
   }
 }
