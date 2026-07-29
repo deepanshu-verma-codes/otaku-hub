@@ -1,28 +1,6 @@
 import { NextResponse } from "next/server";
 
-const dummyImages = Array.from({ length: 100 }).map((_, i) => ({
-  id: `img-${i}`,
-  title: `Anime Wallpaper ${i + 1}`,
-  // Unsplash has nice anime/japan style images
-  url: `https://images.unsplash.com/photo-${[
-    "1578632767115-351597cf2477",
-    "1541562232579-512a21360020",
-    "1528360983277-1a523456c601",
-    "1601850494422-3fb1827f736a",
-    "1580477655124-b1525a1e74a8",
-    "1579361661339-387cb46fdbbc",
-  ][i % 6]}?q=80&w=800&auto=format&fit=crop`,
-  fullUrl: `https://images.unsplash.com/photo-${[
-    "1578632767115-351597cf2477",
-    "1541562232579-512a21360020",
-    "1528360983277-1a523456c601",
-    "1601850494422-3fb1827f736a",
-    "1580477655124-b1525a1e74a8",
-    "1579361661339-387cb46fdbbc",
-  ][i % 6]}?q=100&w=2560&auto=format&fit=crop`,
-  category: ["Action", "Romance", "Isekai", "Slice of Life", "Fantasy"][i % 5],
-  likes: Math.floor(Math.random() * 500),
-}));
+export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -31,22 +9,52 @@ export async function GET(req: Request) {
   const category = searchParams.get("category");
   const search = searchParams.get("search")?.toLowerCase();
 
-  let filtered = dummyImages;
-
-  if (category && category !== "All") {
-    filtered = filtered.filter((img) => img.category === category);
-  }
+  // Safebooru uses 0-indexed pagination
+  const pid = page - 1;
+  let tags = "highres"; // default tag to get good quality images
 
   if (search) {
-    filtered = filtered.filter((img) => img.title.toLowerCase().includes(search));
+    tags = search.replace(/\s+/g, '_');
+  } else if (category && category !== "All") {
+    // Map standard categories to Safebooru tags
+    const categoryMap: Record<string, string> = {
+      "Boys": "1boy rating:safe",
+      "Girls": "1girl rating:safe",
+      "Group": "rating:safe multiple_girls",
+      "Mecha": "mecha rating:safe",
+      "Monsters": "monster rating:safe",
+      "Scenery": "scenery rating:safe"
+    };
+    tags = categoryMap[category] || tags;
   }
 
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  const items = filtered.slice(start, end);
+  try {
+    const res = await fetch(`https://safebooru.org/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(tags)}`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) throw new Error("Failed to fetch from Safebooru");
+    
+    const data = await res.json();
+    
+    const items = data.map((img: any) => {
+      // Safebooru sometimes omits the domain in older API versions, but usually includes it now. Ensure it's absolute.
+      const getAbsoluteUrl = (url: string) => url?.startsWith('http') ? url : `https://safebooru.org/${url?.replace(/^\//, '')}`;
+      
+      return {
+        id: img.id.toString(),
+        title: img.tags.split(" ").slice(0, 3).join(" ").toUpperCase(),
+        url: getAbsoluteUrl(img.sample_url || img.file_url),
+        fullUrl: getAbsoluteUrl(img.file_url),
+        category: category || "All",
+        likes: img.score || Math.floor(Math.random() * 500),
+      };
+    });
 
-  return NextResponse.json({
-    items,
-    nextPage: end < filtered.length ? page + 1 : null,
-  });
+    return NextResponse.json({
+      items,
+      nextPage: data.length === limit ? page + 1 : null,
+    });
+  } catch (error) {
+    return NextResponse.json({ message: "Failed to fetch gallery images" }, { status: 500 });
+  }
 }

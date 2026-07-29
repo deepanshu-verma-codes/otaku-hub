@@ -1,31 +1,64 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Search, Heart, Download, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "@/components/Loader";
 
-const categories = ["waifu", "neko", "kitsune", "husbando"];
+const categories = ["All", "Boys", "Girls", "Group", "Mecha", "Monsters", "Scenery"];
 
 export default function GalleryPage() {
-  const [activeCategory, setActiveCategory] = useState("waifu");
+  const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState<any>(null);
+  const { data: session } = useSession();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search), 500);
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Reset page when category changes
-  useEffect(() => {
-    setPage(1);
-  }, [activeCategory, debouncedSearch]);
+  const { data: favorites } = useQuery({
+    queryKey: ["favorites"],
+    queryFn: async () => {
+      const res = await fetch("/api/favorites");
+      if (!res.ok) throw new Error("Failed to fetch");
+      return res.json();
+    },
+    enabled: !!session,
+  });
+
+  const toggleFavorite = useMutation({
+    mutationFn: async ({ type, action, item }: any) => {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, action, item }),
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+    },
+  });
+
+  const isFavorited = (imgId: string) => {
+    return favorites?.images?.some((f: any) => f.id === imgId);
+  };
+
+  const handleLike = (e: React.MouseEvent, img: any) => {
+    e.stopPropagation();
+    if (!session) return alert("Please sign in to save images.");
+    const action = isFavorited(img.id) ? "remove" : "add";
+    toggleFavorite.mutate({ type: "image", action, item: img });
+  };
 
   const {
     data,
@@ -36,10 +69,10 @@ export default function GalleryPage() {
     queryKey: ["gallery", activeCategory, debouncedSearch, page],
     queryFn: async () => {
       const res = await fetch(
-        `https://nekos.best/api/v2/${activeCategory}?amount=20`
+        `/api/gallery?category=${encodeURIComponent(activeCategory)}&search=${encodeURIComponent(debouncedSearch)}&page=${page}&limit=20`
       );
       const data = await res.json();
-      return data.results || [];
+      return data.items || [];
     },
     staleTime: Infinity, // keep cache for pages so going back doesn't trigger new random results
   });
@@ -57,7 +90,10 @@ export default function GalleryPage() {
             placeholder="SEARCH WALLPAPERS..."
             className="pl-12 bg-[#f5f5f5] border border-[#e7e5e4] rounded-2xl text-[#0c0a09] h-12  tracking-[0.15px] focus-visible:border-white focus-visible:ring-0"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
       </div>
@@ -72,7 +108,10 @@ export default function GalleryPage() {
                 ? "" 
                 : ""
             }`}
-            onClick={() => setActiveCategory(cat)}
+            onClick={() => {
+              setActiveCategory(cat);
+              setPage(1);
+            }}
           >
             {cat}
           </Button>
@@ -106,8 +145,11 @@ export default function GalleryPage() {
                   <span className="text-[10px] text-[#0c0a09] bg-[#494949] px-2 py-1  tracking-[0.225px]">
                     {activeCategory}
                   </span>
-                  <button className="text-[#0c0a09] hover:text-[#1EAEDB] transition-colors" onClick={(e) => { e.stopPropagation(); /* like logic */ }}>
-                    <Heart className="w-6 h-6" />
+                  <button 
+                    className={`transition-colors ${isFavorited(img.id) ? 'text-[#dc2626]' : 'text-[#0c0a09] hover:text-[#dc2626]'}`} 
+                    onClick={(e) => handleLike(e, img)}
+                  >
+                    <Heart className={`w-6 h-6 ${isFavorited(img.id) ? 'fill-current' : ''}`} />
                   </button>
                 </div>
               </div>
@@ -172,8 +214,9 @@ export default function GalleryPage() {
                   <p className="text-[#4e4e4e]  tracking-[0.15px] mt-2">{activeCategory}</p>
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <Button variant="outline" className="gap-2">
-                    <Heart className="w-5 h-5" /> 0
+                  <Button variant="outline" className="gap-2" onClick={(e) => handleLike(e, selectedImage)}>
+                    <Heart className={`w-5 h-5 ${isFavorited(selectedImage.id) ? 'fill-[#dc2626] text-[#dc2626]' : ''}`} /> 
+                    {(selectedImage.likes || 0) + (isFavorited(selectedImage.id) ? 1 : 0)}
                   </Button>
                   <a href={selectedImage.url} target="_blank" rel="noopener noreferrer" className={buttonVariants({ className: "gap-2" })}>
                     <Download className="w-5 h-5" /> DOWNLOAD
