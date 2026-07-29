@@ -29,20 +29,53 @@ export async function GET(req: Request) {
 
     const html = await response.text();
     const doc = new JSDOM(html, { url: targetUrl });
-    const reader = new Readability(doc.window.document);
-    const article = reader.parse();
-
-    if (!article) {
+    
+    const meat = doc.window.document.querySelector("div.meat");
+    
+    if (!meat) {
       throw new Error("Could not parse article");
     }
 
+    // Remove unwanted widgets within meat
+    const widgets = meat.querySelectorAll(".toolbox, .news-topics, .social-buttons, .comments-board, .post-footer, iframe");
+    widgets.forEach(w => w.remove());
+
+    // Fix broken images (relative paths & lazy loading)
+    const images = meat.querySelectorAll("img");
+    images.forEach(img => {
+      let src = img.getAttribute("data-src") || img.getAttribute("src");
+      if (src) {
+        if (src.startsWith("/")) {
+          src = "https://www.animenewsnetwork.com" + src;
+        }
+        img.setAttribute("src", src);
+        img.removeAttribute("data-src");
+        img.removeAttribute("srcset");
+        
+        // Ensure styling doesn't break
+        img.className = "w-full rounded-2xl my-6 object-cover border border-[#e7e5e4] shadow-sm";
+      }
+    });
+
+    // Strip links
+    const links = meat.querySelectorAll("a");
+    links.forEach(link => {
+      const span = doc.window.document.createElement("span");
+      span.innerHTML = link.innerHTML;
+      span.className = "font-medium text-[#0c0a09]";
+      link.replaceWith(span);
+    });
+
+    const cleanContent = meat.innerHTML;
+    const titleMatch = doc.window.document.title.replace(" - Anime News Network", "");
+
     return NextResponse.json({
-      title: article.title,
-      content: article.content,
-      textContent: article.textContent,
-      byline: article.byline,
-      dir: article.dir,
-      siteName: article.siteName,
+      title: titleMatch,
+      content: cleanContent,
+      textContent: meat.textContent,
+      byline: "Anime News",
+      dir: "ltr",
+      siteName: "OtakuHub",
     });
   } catch (error: any) {
     console.error("Failed to fetch article:", error);

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight, BookOpen, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/Loader";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
 const encodeBase64Url = (str: string) => {
@@ -17,11 +18,32 @@ const encodeBase64Url = (str: string) => {
 
 export default function MangaPage() {
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [genre, setGenre] = useState("");
+  const [sort, setSort] = useState("POPULARITY_DESC");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Reset page on new search
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["manga", page],
+    queryKey: ["manga", page, debouncedSearch, genre, sort],
     queryFn: async () => {
-      const res = await fetch(`/api/manga?page=${page}&limit=12`);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "12",
+        sort: sort
+      });
+      if (debouncedSearch) params.append("search", debouncedSearch);
+      if (genre) params.append("genre", genre);
+
+      const res = await fetch(`/api/manga?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch manga");
       return res.json();
     },
@@ -30,14 +52,6 @@ export default function MangaPage() {
 
   const mangaList = data?.items || [];
   const totalPages = data?.totalPages || 1;
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-32 bg-[#f5f5f5] min-h-screen">
-        <Loader />
-      </div>
-    );
-  }
 
   if (isError) {
     return (
@@ -60,8 +74,73 @@ export default function MangaPage() {
         </p>
       </div>
 
+      <div className="flex flex-col md:flex-row gap-4 mb-12">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4e4e4e] w-4 h-4" />
+          <Input 
+            placeholder="Search manga..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 h-12 bg-[#ffffff] border-[#e7e5e4] rounded-2xl"
+          />
+        </div>
+        <div className="flex gap-4">
+          <select 
+            value={genre}
+            onChange={(e) => {
+              setGenre(e.target.value);
+              setPage(1);
+            }}
+            className="h-12 px-4 rounded-2xl border border-[#e7e5e4] bg-[#ffffff] text-[#0c0a09] text-[14px] outline-none focus:ring-2 focus:ring-[#0c0a09] min-w-[140px]"
+          >
+            <option value="">All Genres</option>
+            <option value="Action">Action</option>
+            <option value="Adventure">Adventure</option>
+            <option value="Comedy">Comedy</option>
+            <option value="Drama">Drama</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Horror">Horror</option>
+            <option value="Mecha">Mecha</option>
+            <option value="Music">Music</option>
+            <option value="Mystery">Mystery</option>
+            <option value="Psychological">Psychological</option>
+            <option value="Romance">Romance</option>
+            <option value="Sci-Fi">Sci-Fi</option>
+            <option value="Slice of Life">Slice of Life</option>
+            <option value="Sports">Sports</option>
+            <option value="Supernatural">Supernatural</option>
+            <option value="Thriller">Thriller</option>
+          </select>
+          <select 
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value);
+              setPage(1);
+            }}
+            className="h-12 px-4 rounded-2xl border border-[#e7e5e4] bg-[#ffffff] text-[#0c0a09] text-[14px] outline-none focus:ring-2 focus:ring-[#0c0a09] min-w-[140px]"
+          >
+            <option value="POPULARITY_DESC">Most Popular</option>
+            <option value="TRENDING_DESC">Trending</option>
+            <option value="SCORE_DESC">Highest Rated</option>
+            <option value="START_DATE_DESC">Newest</option>
+            <option value="UPDATED_AT_DESC">Recently Updated</option>
+          </select>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {mangaList.map((manga: any, index: number) => (
+        {isLoading ? (
+          Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="flex flex-col h-full bg-[#ffffff] p-2 rounded-2xl border border-[#e7e5e4]">
+              <Skeleton className="aspect-[3/4] rounded-xl mb-4 w-full" />
+              <Skeleton className="h-6 w-3/4 mb-2" />
+              <div className="flex gap-2 mt-auto">
+                <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-4 w-1/4 rounded-full" />
+              </div>
+            </div>
+          ))
+        ) : mangaList.map((manga: any, index: number) => (
           <Link 
             key={manga.id}
             href={`/manga/${encodeBase64Url(manga.title)}`}

@@ -9,7 +9,7 @@ const ebGaramond = EB_Garamond({ subsets: ["latin"], weight: ["400", "500", "600
 
 export const metadata: Metadata = {
   title: "OtakuHub - Modern Anime Destination",
-  description: "Your ultimate hub for anime wallpapers, videos, and news.",
+  description: "Your ultimate hub for anime wallpapers, trailers, and news.",
 };
 
 export default function RootLayout({

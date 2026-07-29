@@ -4,15 +4,18 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "12");
+  const search = searchParams.get("search") || undefined;
+  const genre = searchParams.get("genre") || undefined;
+  const sort = searchParams.get("sort") || "POPULARITY_DESC";
 
   const query = `
-    query ($page: Int, $perPage: Int) {
+    query ($page: Int, $perPage: Int, $search: String, $genre: String, $sort: [MediaSort]) {
       Page (page: $page, perPage: $perPage) {
         pageInfo {
           total
           lastPage
         }
-        media (sort: POPULARITY_DESC, type: MANGA, isAdult: false) {
+        media (search: $search, genre: $genre, sort: $sort, type: MANGA, isAdult: false) {
           id
           title {
             english
@@ -41,7 +44,13 @@ export async function GET(req: Request) {
       },
       body: JSON.stringify({
         query: query,
-        variables: { page, perPage: limit }
+        variables: { 
+          page, 
+          perPage: limit,
+          ...(search ? { search } : {}),
+          ...(genre ? { genre } : {}),
+          sort: search ? ["SEARCH_MATCH", sort] : [sort]
+        }
       })
     });
     

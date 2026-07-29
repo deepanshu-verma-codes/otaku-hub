@@ -10,7 +10,7 @@ export default function Loader({ className = "" }: { className?: string }) {
         
         {/* Inner logo pulsing */}
         <img 
-          src="/logo.svg" 
+          src="/logo.jpg" 
           alt="Loading..." 
           className="w-6 h-6 animate-pulse" 
           style={{ filter: "drop-shadow(0px 0px 4px rgba(12, 10, 9, 0.1))" }}
