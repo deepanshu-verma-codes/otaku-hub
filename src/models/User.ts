@@ -23,6 +23,14 @@ const UserSchema = new Schema(
     },
     favorites: [{ type: Schema.Types.ObjectId, ref: "Anime" }],
     watchHistory: [{ type: Schema.Types.ObjectId, ref: "Video" }],
+    favoriteImages: {
+      type: Array,
+      default: []
+    },
+    favoriteTrailers: {
+      type: Array,
+      default: []
+    }
   },
   { timestamps: true }
 );

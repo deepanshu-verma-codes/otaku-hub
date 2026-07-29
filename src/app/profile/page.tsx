@@ -2,15 +2,97 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          const MAX_WIDTH = 400;
+          const MAX_HEIGHT = 400;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          let quality = 0.9;
+          let dataUrl = canvas.toDataURL("image/jpeg", quality);
+          
+          while (dataUrl.length > 130000 && quality > 0.1) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL("image/jpeg", quality);
+          }
+
+          resolve(dataUrl);
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUpdating(true);
+      const compressedBase64 = await compressImage(file);
+      
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: compressedBase64 }),
+      });
+
+      if (res.ok) {
+        await update();
+        router.refresh();
+      } else {
+        alert("Failed to update avatar");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error processing image");
+    } finally {
+      setIsUpdating(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -48,8 +130,19 @@ export default function ProfilePage() {
             <h2 className="text-[18px] tracking-normal font-medium text-[#0c0a09] uppercase">{session.user?.name}</h2>
             <p className="text-[#4e4e4e] text-[12px] tracking-[0.15px] mt-2 uppercase">{session.user?.email}</p>
             
-            <Button className="w-full mt-8 bg-transparent hover:bg-[#f5f5f5] text-[#0c0a09] border border-[#e7e5e4] rounded-2xl h-12 tracking-[0.15px] text-[14px]">
-              CHANGE AVATAR
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handleAvatarChange} 
+            />
+            <Button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUpdating}
+              className="w-full mt-8 bg-transparent hover:bg-[#f5f5f5] text-[#0c0a09] border border-[#e7e5e4] rounded-2xl h-12 tracking-[0.15px] text-[14px]"
+            >
+              {isUpdating ? "UPDATING..." : "CHANGE AVATAR"}
             </Button>
           </div>
 
